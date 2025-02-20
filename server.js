@@ -110,7 +110,6 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
-app.use(express.static(path.join(__dirname, '../frontend/menu')));
 app.use(express.json());
 
 // ==================== SEGURIDAD MEJORADA ==================== 
@@ -241,17 +240,15 @@ app.get('/historico', (req, res) => {
 });
 
 // Rutas estáticas
-app.get('/cocina', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/menu/cocina.html'));
-});
 
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/menu/admin.html'));
-});
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/menu/index.html'));
-});
+app.use(cors({
+    origin: [
+        'https://lightgray-rabbit-711267.hostingersite.com/',  // Reemplaza con tu dominio en Hostinger
+        'http://localhost:3000'   // Para desarrollo local
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
