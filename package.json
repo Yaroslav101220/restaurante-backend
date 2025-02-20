@@ -1,0 +1,26 @@
+{
+  "name": "restaurante-app",
+  "version": "1.0.0",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "pkg . --out-path dist"
+  },
+  "pkg": {
+    "assets": [
+      "../frontend/menu/**/*"
+    ],
+    "targets": [
+      "node16-win-x64"
+    ]
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "sqlite3": "^5.1.7"
+  }
+}

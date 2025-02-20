@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1739549900371,
+    "nombre": "Sancocho de Res",
+    "categoria": "sopas",
+    "imagen": "https://www.elespectador.com/resizer/8poRYWbGKM2Px7-tbb5CHYAP5kw=/arc-anglerfish-arc2-prod-elespectador/public/NPCOUP725ZBQBCLN6TJ5RUSHHI.jpg",
+    "precioCop": 18000,
+    "precioUsd": 1.5,
+    "descripcion": "🍲 Tradicional sopa colombiana con carne de res, papa, yuca, plátano y mazorca, servida con arroz y aguacate."
+  },
+  {
+    "id": 1739550636189,
+    "nombre": "Costillas BBQ",
+    "categoria": "general",
+    "imagen": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmYJSTFuLJvz-EL1BhF9si1tL9imPuAoi6_Q&s",
+    "precioCop": 36000,
+    "precioUsd": 4,
+    "descripcion": "🍖 Costillas de cerdo bañadas en salsa BBQ especial, acompañadas de puré de papa y vegetales salteados🔥"
+  },
+  {
+    "id": 1739554063014,
+    "nombre": "Gaseosa Personal",
+    "categoria": "bebidas",
+    "imagen": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUwQ_z-QisUPiBOOGvK_w_11kOiHsffYf-ag&s",
+    "precioCop": 5000,
+    "precioUsd": 0.65,
+    "descripcion": "🥤 Gaseosas – ¡Refrescantes!",
+    "sabores": [
+      "Coca Cola",
+      "Pepsi",
+      "Sprite",
+      "Inca Cola"
+    ]
+  },
+  {
+    "id": 1739570806568,
+    "nombre": "Jugos Naturales",
+    "categoria": "bebidas",
+    "imagen": "https://campograndeperu.com/wp-content/uploads/2023/12/jugueria.jpg",
+    "precioCop": 6000,
+    "precioUsd": 1.5,
+    "descripcion": "✨ Refresca tu día con nuestros jugos naturales 🥤",
+    "sabores": [
+      "🍊Naranja",
+      "🥥Coco",
+      "🥭Mango",
+      "🍋Limón"
+    ]
+  },
+  {
+    "id": 1739583279089,
+    "nombre": "Camarones al aljillo",
+    "categoria": "general",
+    "imagen": "https://i.ytimg.com/vi/kellUpJ7Pk0/maxresdefault.jpg",
+    "precioCop": 35000,
+    "precioUsd": 4.25,
+    "descripcion": "Jugosos camarones 🍤 salteados en una deliciosa salsa de ajo y mantequilla, con un toque de perejil. ¡Sabor intenso y perfecto para los amantes del mar! 🌊"
+  },
+  {
+    "id": 1739583395205,
+    "nombre": "Bandeja Paisa",
+    "categoria": "general",
+    "imagen": "https://cdn.shopify.com/s/files/1/0571/9228/4225/articles/bandejaPaisa.jpg?v=1669053177",
+    "precioCop": 5000,
+    "precioUsd": 5,
+    "descripcion": "Un festín colombiano con arroz, frijoles, chicharrón crocante, carne, huevo frito, plátano maduro, chorizo y aguacate. ¡Puro sabor y tradición en un solo plato! 🥩🍳"
+  },
+  {
+    "id": 1739584107834,
+    "nombre": "Churrasco Colombiano",
+    "categoria": "general",
+    "imagen": "https://www.elespectador.com/resizer/v2/QRCMIXB7TFCZDPLEUBFKIKV73E.jpg?auth=34d8419299e1161bd543dbda4fddb1c0a645166fac2e601846ae23e63e5e6890&width=920&height=613&smart=true&quality=60",
+    "precioCop": 35000,
+    "precioUsd": 5,
+    "descripcion": "Jugosa carne a la parrilla con arroz, papas, ensalada y huevo frito. ¡Sabor y tradición en cada bocado! "
+  },
+  {
+    "id": 1739584726279,
+    "nombre": "Camarones Apanados",
+    "categoria": "general",
+    "imagen": "https://www.cocina-ecuatoriana.com/base/stock/Recipe/camarones-apanados-ecuatorianos/camarones-apanados-ecuatorianos_web.jpg.webp",
+    "precioCop": 40000,
+    "precioUsd": 6.5,
+    "descripcion": "Deliciosos camarones crujientes por fuera y jugosos por dentro, acompañados de una salsa especial. ¡Una explosión de sabor! 🦐"
+  },
+  {
+    "id": 1739745675067,
+    "nombre": "Cervezas (personales)",
+    "categoria": "bebidas",
+    "imagen": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxGVK5AUyYzGw2EROiZnBEOCCmeO2710C7LQ&s",
+    "precioCop": 5500,
+    "precioUsd": 1.75,
+    "descripcion": "Refrescantes, auténticas y llenas de sabor. ¡Perfectas para tu parrillada!",
+    "sabores": [
+      "Aguila",
+      "Poker",
+      "Andina",
+      "Club-Colombiana"
+    ]
+  }
+]
