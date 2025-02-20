@@ -251,7 +251,7 @@ app.get('/', (req, res) => {
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
-const IP = process.env.SERVER_IP || '192.168.100.212'; // Cambia a tu IP local
+const IP = process.env.SERVER_IP || 'https://restaurante-backend-rsxq.onrender.com/'; // Cambia a tu IP local
 server.listen(PORT, IP, () => {
     console.log(`✅ Servidor en http://${IP}:${PORT}`);
     console.log(`🔴 Cocina: http://${IP}:${PORT}/cocina (Usuario: ${process.env.COOK_USER})`);
