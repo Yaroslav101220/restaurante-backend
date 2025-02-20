@@ -5,140 +5,77 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
-require('dotenv').config(); // Añadido para usar variables de entorno
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
-    cors: { origin: "*", methods: ["GET", "POST"] }
+    cors: { 
+        origin: [
+            'https://lightgray-rabbit-711267.hostingersite.com', // Tu dominio en Hostinger
+            'http://localhost:3000' // Desarrollo local
+        ], 
+        methods: ["GET", "POST"] 
+    }
 });
 
-// Archivos de datos
+// ==================== CONFIGURACIÓN INICIAL ====================
 const MENU_FILE = path.join(__dirname, 'menu.json');
 const HISTORICO_FILE = path.join(__dirname, 'historico.json');
+const EXCEL_DIR = path.join(__dirname, 'archivos_excel');
 
-// Inicializar datos
-let menu = [];
-let historico = [];
+// Crear directorio para Excel si no existe
+if (!fs.existsSync(EXCEL_DIR)) {
+    fs.mkdirSync(EXCEL_DIR);
+}
+
+// Cargar datos
+let menu = cargarDatos(MENU_FILE);
+let historico = cargarDatos(HISTORICO_FILE);
 let ordenes = [];
 let contadorPedidos = 1;
 
-// Cargar datos existentes
-try {
-    menu = JSON.parse(fs.readFileSync(MENU_FILE, 'utf8'));
-} catch (error) {
-    fs.writeFileSync(MENU_FILE, '[]');
+// ==================== FUNCIONES AUXILIARES ====================
+function cargarDatos(archivo) {
+    try {
+        return JSON.parse(fs.readFileSync(archivo, 'utf8'));
+    } catch (error) {
+        fs.writeFileSync(archivo, '[]');
+        return [];
+    }
 }
 
-try {
-    historico = JSON.parse(fs.readFileSync(HISTORICO_FILE, 'utf8'));
-} catch (error) {
-    fs.writeFileSync(HISTORICO_FILE, '[]');
-}
-
-// Función para guardar el menú
 const saveMenu = () => fs.writeFileSync(MENU_FILE, JSON.stringify(menu, null, 2));
 
-// Función para exportar a Excel
-function exportarPedidosAExcel() {
-    const fechaHoy = new Date().toISOString().split('T')[0];
-    const nombreArchivo = `pedidos_${fechaHoy}.xlsx`;
-    const rutaArchivo = path.join(__dirname, 'archivos_excel', nombreArchivo);
-
-    if (!fs.existsSync(path.join(__dirname, 'archivos_excel'))) {
-        fs.mkdirSync(path.join(__dirname, 'archivos_excel'));
-    }
-
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Pedidos');
-
-    // Encabezados
-    worksheet.addRow([
-        'ID Pedido', 
-        'Mesa', 
-        'Productos', 
-        'Cantidad Total', 
-        'Total COP', 
-        'Total USD', 
-        'Hora Pedido',
-        'Estado'
-    ]);
-
-    // Datos
-    ordenes.forEach(pedido => {
-        worksheet.addRow([
-            pedido.id,
-            pedido.mesa,
-            pedido.pedido.map(item => `${item.nombre} (x${item.cantidad})`).join('\n'),
-            pedido.pedido.reduce((total, item) => total + item.cantidad, 0),
-            pedido.pedido.reduce((total, item) => total + (item.precioCop * item.cantidad), 0),
-            pedido.pedido.reduce((total, item) => total + (item.precioUsd * item.cantidad), 0).toFixed(2),
-            pedido.timestamp,
-            pedido.status
-        ]);
-    });
-
-    // Estilos
-    worksheet.columns = [
-        { width: 15 }, { width: 10 }, { width: 35 }, 
-        { width: 15 }, { width: 15 }, { width: 15 }, 
-        { width: 20 }, { width: 15 }
-    ];
-
-    workbook.xlsx.writeFile(rutaArchivo)
-        .then(() => console.log(`📊 Reporte diario generado: ${nombreArchivo}`))
-        .catch(error => console.error('Error al generar Excel:', error));
-}
-
-// Exportar y limpiar cada 24 horas
-setInterval(() => {
-    exportarPedidosAExcel();
-    
-    // Guardar en histórico
-    historico = historico.concat(ordenes.map(pedido => ({
-        ...pedido,
-        fecha: new Date().toISOString().split('T')[0]
-    })));
-    fs.writeFileSync(HISTORICO_FILE, JSON.stringify(historico, null, 2));
-    
-    ordenes = [];
-    contadorPedidos = 1;
-}, 24 * 60 * 60 * 1000);
-
+// ==================== CONFIGURACIÓN CORS ====================
 app.use(cors({
-    origin: ['https://restaurante-backend-rsxq.onrender.com', 'http://localhost:3000'], // Permitir solicitudes desde Render y local
+    origin: [
+        'https://lightgray-rabbit-711267.hostingersite.com', // Hostinger
+        'http://localhost:3000', // Desarrollo local
+        'https://restaurante-backend-rsxq.onrender.com' // Render
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
+
 app.use(express.json());
+app.use(express.static('public')); // Sirve archivos estáticos
 
-// ==================== SEGURIDAD MEJORADA ==================== 
-// Middleware de autenticación para Admin
-app.use('/admin', (req, res, next) => {
+// ==================== MIDDLEWARES DE SEGURIDAD ====================
+const basicAuth = (userEnv, passEnv) => (req, res, next) => {
     const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
     const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
-    if (login === process.env.ADMIN_USER && password === process.env.ADMIN_PASS) return next();
+    
+    if (login === process.env[userEnv] && password === process.env[passEnv]) {
+        return next();
+    }
+    
     res.set('WWW-Authenticate', 'Basic realm="Acceso restringido"');
     res.status(401).send('Autenticación requerida');
-});
-
-// Middleware de autenticación para Cocina
-app.use('/cocina', (req, res, next) => {
-    const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
-    const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
-    if (login === process.env.COOK_USER && password === process.env.COOK_PASS) return next();
-    res.set('WWW-Authenticate', 'Basic realm="Acceso restringido"');
-    res.status(401).send('Autenticación requerida');
-});
-
-// Validación de pedidos
-const validarPedido = (pedido) => {
-    return Array.isArray(pedido) && pedido.every(item => 
-        item.nombre && item.precioCop && item.precioUsd && item.cantidad
-    );
 };
 
-// Endpoints para órdenes
+// ==================== ENDPOINTS DE LA API ====================
+// Gestión de órdenes
 app.get('/ordenes', (req, res) => res.json(ordenes));
 
 app.post('/orden', (req, res) => {
@@ -175,24 +112,19 @@ app.put('/orden/:id', (req, res) => {
     }
 });
 
-// Endpoints para el menú
+// Gestión del menú (protegido)
 app.get('/menu', (req, res) => res.json(menu));
 
-app.post('/menu', (req, res) => {
-    const { nombre, categoria, imagen, precioCop, precioUsd, descripcion } = req.body;
-
-    if (!nombre || !categoria || !imagen || !precioCop || !precioUsd || !descripcion) {
+app.post('/menu', basicAuth('ADMIN_USER', 'ADMIN_PASS'), (req, res) => {
+    const requiredFields = ['nombre', 'categoria', 'imagen', 'precioCop', 'precioUsd', 'descripcion'];
+    
+    if (!requiredFields.every(field => req.body[field])) {
         return res.status(400).send('Faltan campos obligatorios');
     }
 
     const newProduct = {
         id: Date.now(),
-        nombre,
-        categoria,
-        imagen,
-        precioCop,
-        precioUsd,
-        descripcion
+        ...req.body
     };
 
     menu.push(newProduct);
@@ -201,61 +133,100 @@ app.post('/menu', (req, res) => {
     res.status(201).json(newProduct);
 });
 
-app.put('/menu/:id', (req, res) => {
+app.put('/menu/:id', basicAuth('ADMIN_USER', 'ADMIN_PASS'), (req, res) => {
     const { id } = req.params;
-    const updates = req.body;
-
     const productIndex = menu.findIndex(p => p.id == id);
-    if (productIndex === -1) {
-        return res.status(404).json({ error: "Producto no encontrado" });
-    }
-
-    menu[productIndex] = { ...menu[productIndex], ...updates };
+    
+    if (productIndex === -1) return res.status(404).send('Producto no encontrado');
+    
+    menu[productIndex] = { ...menu[productIndex], ...req.body };
     saveMenu();
     io.emit('menu-actualizado', menu[productIndex]);
     res.json(menu[productIndex]);
 });
 
-app.delete('/menu/:id', (req, res) => {
-    const { id } = req.params;
-    menu = menu.filter(p => p.id != id);
+app.delete('/menu/:id', basicAuth('ADMIN_USER', 'ADMIN_PASS'), (req, res) => {
+    menu = menu.filter(p => p.id != req.params.id);
     saveMenu();
-    io.emit('menu-actualizado', { id });
+    io.emit('menu-actualizado', { id: req.params.id });
     res.sendStatus(204);
 });
 
-// Nuevos endpoints
+// Reportes e histórico
 app.get('/descargar-excel', (req, res) => {
-    const fechaHoy = new Date().toISOString().split('T')[0];
-    const nombreArchivo = `pedidos_${fechaHoy}.xlsx`;
-    const rutaArchivo = path.join(__dirname, 'archivos_excel', nombreArchivo);
+    const nombreArchivo = `pedidos_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const rutaArchivo = path.join(EXCEL_DIR, nombreArchivo);
 
     fs.existsSync(rutaArchivo) 
         ? res.download(rutaArchivo)
         : res.status(404).send('No hay registros para hoy');
 });
 
-app.get('/historico', (req, res) => {
+app.get('/historico', basicAuth('ADMIN_USER', 'ADMIN_PASS'), (req, res) => {
     res.json(historico);
 });
 
-// Rutas estáticas
+// ==================== FUNCIONES DE APOYO ====================
+function validarPedido(pedido) {
+    return Array.isArray(pedido) && pedido.every(item => 
+        item.nombre && item.precioCop && item.precioUsd && item.cantidad
+    );
+}
 
-app.use(cors({
-    origin: [
-        'https://lightgray-rabbit-711267.hostingersite.com/',  // Reemplaza con tu dominio en Hostinger
-        'http://localhost:3000'   // Para desarrollo local
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
-}));
+function exportarPedidosAExcel() {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Pedidos');
 
-// Iniciar servidor
+    // Configuración de columnas
+    worksheet.columns = [
+        { header: 'ID Pedido', width: 15 },
+        { header: 'Mesa', width: 10 },
+        { header: 'Productos', width: 35 },
+        { header: 'Cantidad Total', width: 15 },
+        { header: 'Total COP', width: 15 },
+        { header: 'Total USD', width: 15 },
+        { header: 'Hora Pedido', width: 20 },
+        { header: 'Estado', width: 15 }
+    ];
+
+    // Llenar datos
+    ordenes.forEach(pedido => {
+        worksheet.addRow([
+            pedido.id,
+            pedido.mesa,
+            pedido.pedido.map(item => `${item.nombre} (x${item.cantidad})`).join('\n'),
+            pedido.pedido.reduce((total, item) => total + item.cantidad, 0),
+            pedido.pedido.reduce((total, item) => total + (item.precioCop * item.cantidad), 0),
+            pedido.pedido.reduce((total, item) => total + (item.precioUsd * item.cantidad), 0).toFixed(2),
+            pedido.timestamp,
+            pedido.status
+        ]);
+    });
+
+    // Guardar archivo
+    const rutaArchivo = path.join(EXCEL_DIR, `pedidos_${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    workbook.xlsx.writeFile(rutaArchivo)
+        .then(() => console.log(`📊 Reporte generado: ${path.basename(rutaArchivo)}`))
+        .catch(error => console.error('Error al generar Excel:', error));
+}
+
+// ==================== TAREAS PROGRAMADAS ====================
+setInterval(() => {
+    exportarPedidosAExcel();
+    historico = [...historico, ...ordenes.map(pedido => ({ ...pedido, fecha: new Date().toISOString().split('T')[0] }))];
+    fs.writeFileSync(HISTORICO_FILE, JSON.stringify(historico, null, 2));
+    ordenes = [];
+    contadorPedidos = 1;
+}, 24 * 60 * 60 * 1000); // Cada 24 horas
+
+// ==================== INICIAR SERVIDOR ====================
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`✅ Servidor en https://restaurante-backend-rsxq.onrender.com`);
-    console.log(`🔴 Cocina: https://restaurante-backend-rsxq.onrender.com/cocina (Usuario: ${process.env.COOK_USER})`);
-    console.log(`🔵 Admin: https://restaurante-backend-rsxq.onrender.com/admin (Usuario: ${process.env.ADMIN_USER})`);
-    console.log(`📊 Histórico: https://restaurante-backend-rsxq.onrender.com/historico`);
-    console.log(`📥 Reportes: https://restaurante-backend-rsxq.onrender.com/descargar-excel`);
+    console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+    console.log(`📌 Endpoints disponibles:`);
+    console.log(`- Menú: https://restaurante-backend-rsxq.onrender.com/menu`);
+    console.log(`- Órdenes: https://restaurante-backend-rsxq.onrender.com/ordenes`);
+    console.log(`- Histórico: https://restaurante-backend-rsxq.onrender.com/historico`);
+    console.log(`- Reportes: https://restaurante-backend-rsxq.onrender.com/descargar-excel`);
 });
