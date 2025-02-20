@@ -105,7 +105,11 @@ setInterval(() => {
     contadorPedidos = 1;
 }, 24 * 60 * 60 * 1000);
 
-app.use(cors());
+app.use(cors({
+    origin: ['https://restaurante-backend-rsxq.onrender.com', 'http://localhost:3000'], // Permitir solicitudes desde Render y local
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 app.use(express.static(path.join(__dirname, '../frontend/menu')));
 app.use(express.json());
 
@@ -251,11 +255,10 @@ app.get('/', (req, res) => {
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
-const IP = process.env.SERVER_IP || 'https://restaurante-backend-rsxq.onrender.com/'; // Cambia a tu IP local
-server.listen(PORT, IP, () => {
-    console.log(`✅ Servidor en http://${IP}:${PORT}`);
-    console.log(`🔴 Cocina: http://${IP}:${PORT}/cocina (Usuario: ${process.env.COOK_USER})`);
-    console.log(`🔵 Admin: http://${IP}:${PORT}/admin (Usuario: ${process.env.ADMIN_USER})`);
-    console.log(`📊 Histórico: http://${IP}:${PORT}/historico`);
-    console.log(`📥 Reportes: http://${IP}:${PORT}/descargar-excel`);
+server.listen(PORT, () => {
+    console.log(`✅ Servidor en https://restaurante-backend-rsxq.onrender.com`);
+    console.log(`🔴 Cocina: https://restaurante-backend-rsxq.onrender.com/cocina (Usuario: ${process.env.COOK_USER})`);
+    console.log(`🔵 Admin: https://restaurante-backend-rsxq.onrender.com/admin (Usuario: ${process.env.ADMIN_USER})`);
+    console.log(`📊 Histórico: https://restaurante-backend-rsxq.onrender.com/historico`);
+    console.log(`📥 Reportes: https://restaurante-backend-rsxq.onrender.com/descargar-excel`);
 });
